@@ -142,7 +142,7 @@ router.post("/api/user/sendemailotp", (req, res) => {
       to: req.body.email, // list of receivers
       subject: "Email Verification ✔", // Subject line
       text: "Email Verification code", // plain text body
-      html: "<b>Your verification code is " + val + "</b>", // html body
+      html: "<b>Your verification code is " + otp + "</b>", // html body
     },
     function (error, info) {
       if (error) {
@@ -159,7 +159,7 @@ router.post("/api/user/sendemailotp", (req, res) => {
   );
 });
 
-//check email new email already exists
+//check  new email already exists
 
 router.get("/api/user/checkemailexists", (req, res) => {
   User.findOne(
@@ -228,6 +228,69 @@ router.put("/api/user/changeemail/:userid", (req, res) => {
   );
 
   // });
+});
+
+//for forgot password
+router.post("/api/user/checkemailexistsandsendotp/:email", (req, res) => {
+  const _email = req.params.email;
+  console.log(_email);
+  var otp = Math.floor(1000 + Math.random() * 9000);
+  User.findOne(
+    {
+      email: _email,
+    },
+    (err, result) => {
+      if (!result) {
+        res.status(200).json({ message: "Email doesnot exists" });
+      } else {
+        console.log(otp);
+        transporter.sendMail(
+          {
+            from: '"PoolYourCar 👻" <poolyourc@gmail.com>', // sender address
+            to: _email, // list of receivers
+            subject: "Email Verification ✔", // Subject line
+            text: "Email Verification code", // plain text body
+            html: "<b>Your verification code is " + otp + "</b>", // html body
+          },
+          function (error, info) {
+            if (error) {
+              res.send(error);
+            } else {
+              res.status(200).json({
+                code: 200,
+                message: "Email sent: " + info.response,
+                otp: otp,
+              });
+              //res.send("Email sent: " + info.response);
+            }
+          }
+        );
+      }
+    }
+  );
+});
+
+router.put("/api/user/resetforgotpassword/:email", (req, res) => {
+  _email = req.params.email;
+  let hashpassword = bcrypt.hashSync(req.body.password, 10);
+  User.findOneAndUpdate(
+    { email: _email },
+    { $set: { password: hashpassword, confirmpassword: hashpassword } },
+    { new: true },
+    (err, user) => {
+      if (!err) {
+        console.log(user.email);
+        res.status(200).json({
+          code: 200,
+          message: "Password Updated",
+          updateUser: user,
+        });
+        //console.log("Password Updated");
+      } else {
+        console.log(err);
+      }
+    }
+  );
 });
 
 //Get all user
@@ -2078,7 +2141,7 @@ router.post("/api/conversation/createconversation", (req, res, next) => {
                     console.log(doc);
                     res.status(200).json({
                       code: 200,
-                      message: "Conversation added in users inbox",
+                      text: "Conversation added in users inbox",
                       conversation: conversation,
                     });
                   } else {
@@ -2123,7 +2186,7 @@ router.get(
   (req, res) => {
     const firstUserId = req.params.myid;
     const secondUserId = req.params.seconduserid;
-    User.findById(req.params.myid, async (err, _user) => {
+    User.findById(firstUserId, async (err, _user) => {
       if (!err) {
         //res.send(_user.inboxconversations);
         if (_user.inboxconversations != null) {
@@ -2134,7 +2197,11 @@ router.get(
           if (found == true) {
             // console.log("found true");
             // console.log(afterfunctioncallConversation[0]);
-            res.status(200).json(afterfunctioncallConversation[0]);
+            // res.status(200).json(afterfunctioncallConversation[0]);
+            res.status(200).json({
+              text: "Conversation is ",
+              conversation: afterfunctioncallConversation[0],
+            });
           }
           if (found == false) {
             res.json("Create New Conversation");

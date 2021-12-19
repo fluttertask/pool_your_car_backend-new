@@ -65,7 +65,7 @@ io.on("connection", function (socket) {
   socket.on("message", function name(data) {
     console.log(data);
     console.log(convo_id);
-    io.to(convo_id).emit("message", data);
+    // io.to(convo_id).emit("message", data);
     var msg = {
       senderId: data.senderId,
       text: data.message,
@@ -79,7 +79,8 @@ io.on("connection", function (socket) {
         if (!err) {
           console.log(conversation);
          // socket.emit("newmessage", conversation);
-         socket.emit("newmessage", conversation);
+         io.to(convo_id).emit("newmessage", conversation);
+        // io.to.emit("newmessage", conversation);
         } else {
           console.log(err);
         }
