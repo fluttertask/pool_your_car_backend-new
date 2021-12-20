@@ -230,6 +230,38 @@ router.put("/api/user/changeemail/:userid", (req, res) => {
   // });
 });
 
+//reset phone number in edit profile
+
+router.put("/api/user/resetphonenumber/:userid", (req, res) => {
+  _userid = req.params.userid;
+  _phonenumber = req.body.phonenumber;
+  console.log(_phonenumber);
+  User.findOne({ phonenumber: _phonenumber }, (err, result) => {
+    if (!result) {
+      User.findOneAndUpdate(
+        { _id: _userid },
+        { $set: { phonenumber: _phonenumber } },
+        { new: true },
+        (err, _user) => {
+          if (!err) {
+            console.log(_user)
+            res.status(200).json({
+              code: 200,
+              message: "Phone Number Updated",
+              updateUser: _user,
+            });
+            //console.log("Password Updated");
+          } else {
+            console.log(err);
+          }
+        }
+      );
+    } else {
+      res.status(400).json("Phone number already taken");
+    }
+  });
+});
+
 //for forgot password
 router.post("/api/user/checkemailexistsandsendotp/:email", (req, res) => {
   const _email = req.params.email;
