@@ -80,6 +80,10 @@ const User = mongoose.model("User", {
     type: mongoose.Schema.ObjectId,
     ref: "Wallet",
   },
+  blocked: {
+    type: String,
+    default: 'unblocked'
+  },
   offeredride: [
     {
       type: mongoose.Schema.ObjectId,
